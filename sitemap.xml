@@ -4,71 +4,159 @@
   <url>
     <loc>https://jackytpy.github.io/Lunar-Calendar/</loc>
     
-    <lastmod>2021-08-08T15:18:27.687Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/tags/index.html</loc>
     
-    <lastmod>2021-08-08T14:38:53.254Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/Setting-PWA-in-Vue/</loc>
     
-    <lastmod>2021-08-08T14:38:53.232Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/The-Method-To-Save-Objects-With-Console/</loc>
     
-    <lastmod>2021-08-08T14:38:53.232Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/about/index.html</loc>
     
-    <lastmod>2021-08-08T14:38:53.232Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/categories/index.html</loc>
     
-    <lastmod>2021-08-08T14:38:53.232Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/Deploy-Vue.js-to-Azure-Static-Web-Apps/</loc>
     
-    <lastmod>2021-08-08T14:38:53.231Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/Detecting-a-mobile-browser/</loc>
     
-    <lastmod>2021-08-08T14:38:53.231Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/Kendo-Filter-to-JsonLogic-Interpretor/</loc>
     
-    <lastmod>2021-08-08T14:38:53.231Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
     <loc>https://jackytpy.github.io/Service-Worker/</loc>
     
-    <lastmod>2021-08-08T14:38:53.231Z</lastmod>
+    <lastmod>2021-08-08</lastmod>
     
+  </url>
+  
+
+  <url>
+    <loc>https://jackytpy.github.io/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/Azure/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/Vue/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/JavaScript/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/Kendo/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/JsonLogic/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/PWA/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/Python/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/tags/Calendar/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  
+  <url>
+    <loc>https://jackytpy.github.io/categories/Azure/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E8%A1%93/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jackytpy.github.io/categories/Python/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
   </url>
   
 </urlset>
