@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jackytpy.github.io/about/index.html</loc>
+    
+    <lastmod>2021-08-08</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jackytpy.github.io/Lunar-Calendar/</loc>
     
     <lastmod>2021-08-08</lastmod>
@@ -30,13 +37,6 @@
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/about/index.html</loc>
-    
-    <lastmod>2021-08-08</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jackytpy.github.io/categories/index.html</loc>
     
     <lastmod>2021-08-08</lastmod>
@@ -58,14 +58,14 @@
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/Kendo-Filter-to-JsonLogic-Interpretor/</loc>
+    <loc>https://jackytpy.github.io/Service-Worker/</loc>
     
     <lastmod>2021-08-08</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/Service-Worker/</loc>
+    <loc>https://jackytpy.github.io/Kendo-Filter-to-JsonLogic-Interpretor/</loc>
     
     <lastmod>2021-08-08</lastmod>
     
@@ -102,14 +102,14 @@
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/tags/Kendo/</loc>
+    <loc>https://jackytpy.github.io/tags/Python/</loc>
     <lastmod>2021-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/tags/JsonLogic/</loc>
+    <loc>https://jackytpy.github.io/tags/Calendar/</loc>
     <lastmod>2021-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -123,14 +123,14 @@
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/tags/Python/</loc>
+    <loc>https://jackytpy.github.io/tags/Kendo/</loc>
     <lastmod>2021-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://jackytpy.github.io/tags/Calendar/</loc>
+    <loc>https://jackytpy.github.io/tags/JsonLogic/</loc>
     <lastmod>2021-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
