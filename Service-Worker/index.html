@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jackytpy.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="剛好工作上要處理一個服務的離線存取功能，於是花了一些時間研究了一下 Service Worker ，發現透過 Service Worker 我們可以達成訊息推播、離線處理等功能，但是這裡只有提到離線存取的功能，推播可能之後會再補一篇吧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Service Worker 離線支援">
+<meta property="og:url" content="https://jackytpy.github.io/Service-Worker/index.html">
+<meta property="og:site_name" content="下午三點的落地窗">
+<meta property="og:description" content="剛好工作上要處理一個服務的離線存取功能，於是花了一些時間研究了一下 Service Worker ，發現透過 Service Worker 我們可以達成訊息推播、離線處理等功能，但是這裡只有提到離線存取的功能，推播可能之後會再補一篇吧。">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/tt6CltV.png">
+<meta property="article:published_time" content="2020-06-29T05:30:31.000Z">
+<meta property="article:modified_time" content="2021-08-08T14:38:53.231Z">
+<meta property="article:author" content="Jacky Tseng">
+<meta property="article:tag" content="service">
+<meta property="article:tag" content=" worker">
+<meta property="article:tag" content=" sw">
+<meta property="article:tag" content=" offline">
+<meta property="article:tag" content=" pwa">
+<meta property="article:tag" content=" js">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/tt6CltV.png">
+
+<link rel="canonical" href="https://jackytpy.github.io/Service-Worker/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>Service Worker 離線支援 | 下午三點的落地窗</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">下午三點的落地窗</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">什麼都想嘗試看看的斜槓前端工程師隨筆</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://jackytpy.github.io/Service-Worker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jacky Tseng">
+      <meta itemprop="description" content="什麼都想嘗試看看的斜槓前端工程師隨筆">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="下午三點的落地窗">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Service Worker 離線支援
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2020-06-29 13:30:31" itemprop="dateCreated datePublished" datetime="2020-06-29T13:30:31+08:00">2020-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-08-08 22:38:53" itemprop="dateModified" datetime="2021-08-08T22:38:53+08:00">2021-08-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E8%A1%93/" itemprop="url" rel="index"><span itemprop="name">前端技術</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>剛好工作上要處理一個服務的離線存取功能，於是花了一些時間研究了一下 Service Worker ，發現透過 Service Worker 我們可以達成訊息推播、離線處理等功能，但是這裡只有提到離線存取的功能，推播可能之後會再補一篇吧。</p>
+<a id="more"></a>
+
+<h1 id="生命週期"><a href="#生命週期" class="headerlink" title="生命週期"></a>生命週期</h1><center>
+    <img src="https://i.imgur.com/tt6CltV.png" />
+</center>
+
+<h1 id="註冊"><a href="#註冊" class="headerlink" title="註冊"></a>註冊</h1><p>Service Worker 註冊完成後，瀏覽器才會開始執行背景安裝。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) &#123; <span class="comment">// 檢查瀏覽器有沒有支援</span></span><br><span class="line">  navigator.serviceWorker</span><br><span class="line">    .register(<span class="string">'/serviceWorker.js'</span>) <span class="comment">// 註冊 Service Worker</span></span><br><span class="line">    .then(<span class="function"><span class="params">reg</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'Registration succeeded. Scope is '</span> + reg.scope); <span class="comment">// 註冊成功</span></span><br><span class="line">      reg.update(); <span class="comment">// 如果已經有 sw 在運行，安裝完成後覆蓋掉舊的</span></span><br><span class="line">    &#125;)</span><br><span class="line">    .catch(<span class="function"><span class="params">error</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'Registration failed with '</span> + error); <span class="comment">// 註冊失敗</span></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何在一開始傳參數給-service-worker-進行初始化"><a href="#如何在一開始傳參數給-service-worker-進行初始化" class="headerlink" title="如何在一開始傳參數給 service worker 進行初始化?"></a>如何在一開始傳參數給 service worker 進行初始化?</h2><p>我們可以在註冊的時候，在 service-worker.js 的路徑上加上 query 。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="string">"serviceWorker"</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">      navigator.serviceWorker.register(</span><br><span class="line">        <span class="string">`/service-worker.js?shareCode=<span class="subst">$&#123;<span class="built_in">encodeURIComponent</span>(</span></span></span><br><span class="line"><span class="string"><span class="subst">          <span class="keyword">this</span>.$route.params.shareCode <span class="regexp">//</span> 從 Vue 的路由取得 shareCode</span></span></span><br><span class="line"><span class="string"><span class="subst">        )&#125;</span>`</span></span><br><span class="line">      )</span><br><span class="line">      .then(<span class="function"><span class="params">reg</span> =&gt;</span> &#123;</span><br><span class="line">        reg.update()</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>然後在 service-worker.js 中，我們可以這樣取得。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> shareCode = <span class="keyword">new</span> URL(location).searchParams.get(<span class="string">'shareCode'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>如果你想要在 service worker 安裝時就將所有線上檔案離線，用這個方法可以先取得你要的資訊，然後直接 fetch 資料存快取。</p>
+<h2 id="一般情況下-DOM-與-service-worker-的溝通"><a href="#一般情況下-DOM-與-service-worker-的溝通" class="headerlink" title="一般情況下 DOM 與 service worker 的溝通"></a>一般情況下 DOM 與 service worker 的溝通</h2><p>這個方法只能在 service worker 啟動（activate）後執行。</p>
+<p>在 <code>service-worker.js</code>中向 client 傳送訊息。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.clients.matchAll() <span class="comment">// 取得此 service worker 控管的所有 clients</span></span><br><span class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params">clients</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (clients &amp;&amp; clients.length) &#123;</span><br><span class="line">            clients.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">client</span>) </span>&#123;</span><br><span class="line">                <span class="comment">// 向 client 傳送 "hello client"</span></span><br><span class="line">                client.postMessage(<span class="string">'hello client'</span>);</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>在 client 向 service worker 傳送訊息。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 向 service worker 傳送 "hello service worker"</span></span><br><span class="line">navigator.serviceWorker.controller &amp;&amp; navigator.serviceWorker.controller.postMessage(<span class="string">'hello service worker'</span>);</span><br><span class="line"><span class="comment">// 不只字串，也可以傳送物件</span></span><br></pre></td></tr></table></figure>
+
+<p>在 <code>service-worker.js</code>中接收 client 傳送的訊息。<br><a href="#Message">與監聽事件的 Message 一樣</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'message'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(event.data); </span><br><span class="line">    <span class="comment">// "hello service worker"</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>在 client 接收 service worker 傳送的訊息。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">navigator.serviceWorker.addEventListener(<span class="string">'message'</span>, event =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (event.data === <span class="string">'hello client'</span>) &#123;</span><br><span class="line">       <span class="comment">// do something</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="可以監聽的事件們"><a href="#可以監聽的事件們" class="headerlink" title="可以監聽的事件們"></a>可以監聽的事件們</h1><h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'install'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 通常都在這裡快取離線需要的檔案</span></span><br><span class="line">    </span><br><span class="line">    event.waitUntil(</span><br><span class="line">    <span class="comment">// 安裝完畢後執行，執行完觸發下一個事件</span></span><br><span class="line">    );</span><br><span class="line">    </span><br><span class="line">    self.skipWaiting();</span><br><span class="line">    <span class="comment">// 不等待執行完，直接 activate</span></span><br><span class="line">    <span class="comment">// 不等待舊 service worker terminated，直接 activate 覆蓋掉舊的</span></span><br><span class="line">    <span class="comment">// 不然 service worker 無法自動更新，會一值 waiting 等待舊的被手動終止</span></span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Activate"><a href="#Activate" class="headerlink" title="Activate"></a>Activate</h2><p>安裝成功後就會啟動。<br>當有超過一個 service worker 時，新的 service worker 安裝完不會馬上啟動，要關閉（寫好 code 或手動）所有舊的之後新的才會啟動。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'activate'</span>, event =&gt; &#123;</span><br><span class="line">    <span class="comment">// 可以在這裡刪除舊的快取資料</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'activated'</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Fetch"><a href="#Fetch" class="headerlink" title="Fetch"></a>Fetch</h2><p>service worker 可以劫持 client 發出的 fetch ，並且使用 <code>event.respondWith()</code> 回傳 response 給 client 。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'fetch'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (navigator.onLine) &#123; </span><br><span class="line">    <span class="comment">// 如果有網路狀態</span></span><br><span class="line">    event.respondWith(</span><br><span class="line">      caches.open(cacheName).then(<span class="function"><span class="keyword">function</span> (<span class="params">cache</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> cache.match(event.request.url).then(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> response || fetch(event.request.url)</span><br><span class="line">          <span class="comment">// 如果有找到快取就回傳快取</span></span><br><span class="line">          <span class="comment">// 如果沒找到就進行 fetch </span></span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;)</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 沒網路狀態</span></span><br><span class="line">    event.respondWith(</span><br><span class="line">      caches.open(cacheName).then(<span class="function"><span class="keyword">function</span> (<span class="params">cache</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> cache.match(event.request.url, &#123; <span class="attr">ignoreSearch</span>: <span class="literal">true</span> &#125;) <span class="comment">// 不偵測 url 中 ? 以後的 query</span></span><br><span class="line">          .then(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> response</span><br><span class="line">          &#125;);</span><br><span class="line">      &#125;)</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>為了避免想要取得新資料卻因為 request url 的 response 已經被快取住了，永遠得不到新的資料，我都會在 url 後面接 ?[當下時間] 來確保可以 fetch 到新檔案。</p>
+<p>但是在沒有網路的情況下，會得不到 response 而跳錯誤。因此在沒網路的狀態下要加上 <code>{ignoreSearch: true}</code> 來忽略 ? 後面的 query 來得到快取中的值。</p>
+<h2 id="Message"><a href="#Message" class="headerlink" title="Message"></a>Message</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'message'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(event.data);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="如何支援離線"><a href="#如何支援離線" class="headerlink" title="如何支援離線"></a>如何支援離線</h1><p>在 PWA 中支援離線操作是很重要的一個特色，下面會介紹怎麼用 Cache 來達成這項事情。</p>
+<p>當你把資料快取完之後，可以監聽<a href="#Fetch">service worker 中的 fetch 事件</a>將 client 的 fetch 攔截後回傳你早就快取好的值。</p>
+<h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> promise = [];</span><br><span class="line"></span><br><span class="line">caches.open(cacheName) <span class="comment">// 可以自己取一個 cache 集合的名稱</span></span><br><span class="line">    .then(<span class="function"><span class="params">cache</span> =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 除了檔案，頁面也要記得快取。</span></span><br><span class="line">      promises.push(cache.add(<span class="string">`/`</span>))</span><br><span class="line">      ...</span><br><span class="line">      </span><br><span class="line">      <span class="comment">// 等所有的 cache 都完成之後，通知所有頁面</span></span><br><span class="line">      <span class="built_in">Promise</span>.all(promises).then(<span class="function"><span class="params">e</span> =&gt;</span> self.clients.matchAll().then(<span class="function"><span class="params">all</span> =&gt;</span> all.map(<span class="function"><span class="params">client</span> =&gt;</span> client.postMessage(<span class="string">'cache done!'</span>))))</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>順帶一題<code>cache.add()</code> 其實就等於</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fetch(url).then(<span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!response.ok) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'bad response status'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> cache.put(url, response);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+              <a href="/tags/PWA/" rel="tag"># PWA</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Setting-PWA-in-Vue/" rel="prev" title="在 Vue 中設定 PWA">
+      <i class="fa fa-chevron-left"></i> 在 Vue 中設定 PWA
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Detecting-a-mobile-browser/" rel="next" title="Detecting a mobile browser">
+      Detecting a mobile browser <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#生命週期"><span class="nav-number">1.</span> <span class="nav-text">生命週期</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#註冊"><span class="nav-number">2.</span> <span class="nav-text">註冊</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何在一開始傳參數給-service-worker-進行初始化"><span class="nav-number">2.1.</span> <span class="nav-text">如何在一開始傳參數給 service worker 進行初始化?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一般情況下-DOM-與-service-worker-的溝通"><span class="nav-number">2.2.</span> <span class="nav-text">一般情況下 DOM 與 service worker 的溝通</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#可以監聽的事件們"><span class="nav-number">3.</span> <span class="nav-text">可以監聽的事件們</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install"><span class="nav-number">3.1.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Activate"><span class="nav-number">3.2.</span> <span class="nav-text">Activate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fetch"><span class="nav-number">3.3.</span> <span class="nav-text">Fetch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Message"><span class="nav-number">3.4.</span> <span class="nav-text">Message</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何支援離線"><span class="nav-number">4.</span> <span class="nav-text">如何支援離線</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cache"><span class="nav-number">4.1.</span> <span class="nav-text">Cache</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jacky Tseng</p>
+  <div class="site-description" itemprop="description">什麼都想嘗試看看的斜槓前端工程師隨筆</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分類</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jacky Tseng</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

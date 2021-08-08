@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jackytpy.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近開始使用 Vue 來作為前端開發的框架，但是關於 PWA 的部分， Vue 會動態依照設定的資料產生固定的 Manifest ， Service Worker 也是使用 Workbox 來自動產生，在一般使用情形下是很方便，但是如果要做到比如說動態 Manifest 設定的話就會很麻煩，於是我就又掉入一個坑了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Vue 中設定 PWA">
+<meta property="og:url" content="https://jackytpy.github.io/Setting-PWA-in-Vue/index.html">
+<meta property="og:site_name" content="下午三點的落地窗">
+<meta property="og:description" content="最近開始使用 Vue 來作為前端開發的框架，但是關於 PWA 的部分， Vue 會動態依照設定的資料產生固定的 Manifest ， Service Worker 也是使用 Workbox 來自動產生，在一般使用情形下是很方便，但是如果要做到比如說動態 Manifest 設定的話就會很麻煩，於是我就又掉入一個坑了。">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/hv32G07.png">
+<meta property="article:published_time" content="2020-06-29T05:18:33.000Z">
+<meta property="article:modified_time" content="2021-08-08T14:38:53.232Z">
+<meta property="article:author" content="Jacky Tseng">
+<meta property="article:tag" content="vue">
+<meta property="article:tag" content=" pwa">
+<meta property="article:tag" content=" service">
+<meta property="article:tag" content=" worker">
+<meta property="article:tag" content=" sw">
+<meta property="article:tag" content=" js">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/hv32G07.png">
+
+<link rel="canonical" href="https://jackytpy.github.io/Setting-PWA-in-Vue/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>在 Vue 中設定 PWA | 下午三點的落地窗</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">下午三點的落地窗</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">什麼都想嘗試看看的斜槓前端工程師隨筆</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://jackytpy.github.io/Setting-PWA-in-Vue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jacky Tseng">
+      <meta itemprop="description" content="什麼都想嘗試看看的斜槓前端工程師隨筆">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="下午三點的落地窗">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 Vue 中設定 PWA
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2020-06-29 13:18:33" itemprop="dateCreated datePublished" datetime="2020-06-29T13:18:33+08:00">2020-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-08-08 22:38:53" itemprop="dateModified" datetime="2021-08-08T22:38:53+08:00">2021-08-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E8%A1%93/" itemprop="url" rel="index"><span itemprop="name">前端技術</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近開始使用 Vue 來作為前端開發的框架，但是關於 PWA 的部分， Vue 會動態依照設定的資料產生固定的 Manifest ， Service Worker 也是使用 Workbox 來自動產生，在一般使用情形下是很方便，但是如果要做到比如說動態 Manifest 設定的話就會很麻煩，於是我就又掉入一個坑了。 </p>
+<a id="more"></a>
+
+<h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><ul>
+<li>將環景資料儲存於快取中，支援離線與優化體驗</li>
+<li>當資料更新時，更新快取來讓資料保持最新</li>
+<li>當程式碼更新時，更新 service worker 來更新服務</li>
+</ul>
+<h1 id="Vue-原本的附加-pwa-機制"><a href="#Vue-原本的附加-pwa-機制" class="headerlink" title="Vue 原本的附加 pwa 機制"></a>Vue 原本的附加 pwa 機制</h1><p>Vue 專案在建立的時候可以選擇加入 PWA 的 plugin，<code>npm run build</code>之後就會自動依據你的設定生產出 PWA 需要的文本，包括 manifest.json 與 service-worker.js。</p>
+<p>Vue 用的是 google 開發的 workbox 來處理 precache 的部分，但因為pano 的情況比較特殊，所以在這裡 service-worker 的部分我就自己寫了。</p>
+<h1 id="manifest-的設定"><a href="#manifest-的設定" class="headerlink" title="manifest 的設定"></a>manifest 的設定</h1><p>manifest.json 是一份文件，用來定義 PWA 在下載到桌面的時候，名字與介面形式長怎樣，然而 iOS 是不吃 manifest.json 而是有不一樣的設定，這些網路上有很多資源可以看，在這邊就不贅述了，例如：<a href="https://medium.com/front-end-augustus-study-notes/pwa-minifest-6943b5fc65a9" target="_blank" rel="noopener">PWA學習筆記-4：manifest.json</a>。</p>
+<p>在 vue.config.js 中，我們可以設定好 manifest 的相關設定，之後 build 起來的同時，Vue 會幫我們依照這裡的設定生成 manifest.json 以及 workbox 相關文件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="comment">// ...other vue-cli plugin options...</span></span><br><span class="line">  pwa: &#123;</span><br><span class="line">    name: <span class="string">'My App'</span>,</span><br><span class="line">    themeColor: <span class="string">'#4DBA87'</span>,</span><br><span class="line">    msTileColor: <span class="string">'#000000'</span>,</span><br><span class="line">    appleMobileWebAppCapable: <span class="string">'yes'</span>,</span><br><span class="line">    appleMobileWebAppStatusBarStyle: <span class="string">'black'</span>,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果想要自己寫 service-worker.js</span></span><br><span class="line">    <span class="comment">// configure the workbox plugin</span></span><br><span class="line">    workboxPluginMode: <span class="string">'InjectManifest'</span>,</span><br><span class="line">    workboxOptions: &#123;</span><br><span class="line">      <span class="comment">// swSrc is required in InjectManifest mode.</span></span><br><span class="line">      swSrc: <span class="string">'src/service-worker.js'</span>,</span><br><span class="line">      <span class="comment">// ...other Workbox options...</span></span><br><span class="line">    &#125;,</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果想要讓他自己生產</span></span><br><span class="line">    workboxPluginMode: <span class="string">'GenerateSW'</span>,</span><br><span class="line">    workboxOptions: &#123;</span><br><span class="line">      <span class="comment">// 不等待 terminated 直接取代舊的 service-worker</span></span><br><span class="line">      <span class="comment">// 解決無法自動更新的問題</span></span><br><span class="line">      skipWaiting: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這個 build 完就會成為 dist 資料夾中的某些靜態檔案內容，並不能動態生成，但是 pano 有許多不同的環景專案，我不希望每個專案在下載到桌面的時候都叫做 “Syncobox Panorama”，我希望每次下載的時候， app 顯示名稱可以是那個專案的名字，為此我用了另一個比較暴力的方法。</p>
+<h1 id="動態-manifest-json"><a href="#動態-manifest-json" class="headerlink" title="動態 manifest.json"></a>動態 manifest.json</h1><p>前端沒有辦法進行檔案讀寫，因此我們必須利用動態生成 blob 來進行 manifest.json 即時竄改的部分。</p>
+<p>首先，要先在 Vue 的 PWA 設定中開啟 iOS 的支援。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="string">"pwa"</span>: &#123;</span><br><span class="line">    <span class="string">"appleMobileWebAppCapable"</span>: <span class="string">"yes"</span>, <span class="comment">// 這裏</span></span><br><span class="line">    <span class="string">"workboxPluginMode"</span>: <span class="string">"InjectManifest"</span>,</span><br><span class="line">    <span class="string">"workboxOptions"</span>: &#123;</span><br><span class="line">      <span class="string">"swSrc"</span>: <span class="string">"src/service-worker.js"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然後，我們得先知道，我們是在 build 完的檔案是在哪裡定義 manifest.json 的。</p>
+<p>/dist/index.html</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;head&gt;</span><br><span class="line">  ...</span><br><span class="line">  &lt;link rel&#x3D;manifest href&#x3D;&#x2F;manifest.json&gt;</span><br><span class="line">  &lt;meta name&#x3D;theme-color content&#x3D;#4DBA87&gt;</span><br><span class="line">  &lt;meta name&#x3D;apple-mobile-web-app-capable content&#x3D;yes&gt;</span><br><span class="line">  &lt;meta name&#x3D;apple-mobile-web-app-status-bar-style content&#x3D;default&gt;</span><br><span class="line">  &lt;meta name&#x3D;apple-mobile-web-app-title content&#x3D;syncobox_panorama_pwa&gt;</span><br><span class="line">  &lt;link rel&#x3D;apple-touch-icon href&#x3D;&#x2F;img&#x2F;icons&#x2F;apple-touch-icon-152x152.png&gt;</span><br><span class="line">  &lt;link rel&#x3D;mask-icon href&#x3D;&#x2F;img&#x2F;icons&#x2F;safari-pinned-tab.svg color&#x3D;#4DBA87&gt;</span><br><span class="line">  &lt;meta name&#x3D;msapplication-TileImage content&#x3D;&#x2F;img&#x2F;icons&#x2F;msapplication-icon-144x144.png&gt;</span><br><span class="line">  &lt;meta name&#x3D;msapplication-TileColor content&#x3D;#000000&gt;</span><br><span class="line">  ...</span><br><span class="line">&lt;&#x2F;head&gt;</span><br></pre></td></tr></table></figure>
+
+<p>知道位置後我們就可以來用進行複寫了，首先我們需要先定義好新的 manifest.json 內容。</p>
+<p>/src/viewed/PanoViewPage.vue</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">method: &#123;</span><br><span class="line">    ...</span><br><span class="line">    define_manifest() &#123;</span><br><span class="line">      <span class="keyword">let</span> manifest = &#123;</span><br><span class="line">        name: <span class="keyword">this</span>.project.scene.name,</span><br><span class="line">        short_name: <span class="keyword">this</span>.project.scene.name,</span><br><span class="line">        theme_color: <span class="string">"#4DBA87"</span>,</span><br><span class="line">        icons: [</span><br><span class="line">          &#123;</span><br><span class="line">            src: <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.API.pano_url.getImage&#125;</span>/<span class="subst">$&#123;<span class="keyword">this</span>.project.scene.id&#125;</span>/pwa_thumb_512.png`</span>,</span><br><span class="line">            sizes: <span class="string">"512x512"</span>,</span><br><span class="line">            type: <span class="string">"image/png"</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            src: <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.API.pano_url.getImage&#125;</span>/<span class="subst">$&#123;<span class="keyword">this</span>.project.scene.id&#125;</span>/pwa_thumb_512_mask.png`</span>,</span><br><span class="line">            sizes: <span class="string">"512x512"</span>,</span><br><span class="line">            type: <span class="string">"image/png"</span>,</span><br><span class="line">            purpose: <span class="string">"maskable"</span></span><br><span class="line">          &#125;</span><br><span class="line">        ],</span><br><span class="line">        start_url: <span class="string">`<span class="subst">$&#123;<span class="built_in">window</span>.location.origin&#125;</span>/<span class="subst">$&#123;<span class="keyword">this</span>.$route.params.shareCode&#125;</span>`</span>,</span><br><span class="line">        display: <span class="string">"standalone"</span>,</span><br><span class="line">        background_color: <span class="string">"#000000"</span></span><br><span class="line">      &#125;;</span><br><span class="line">      <span class="keyword">this</span>.set_manifest(manifest);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然後再進行設定，這裡連 iOS 的設定也要根據新的 manifest 內容進行更新。</p>
+<p>/src/viewed/PanoViewPage.vue</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">method: &#123;</span><br><span class="line">    ...</span><br><span class="line">    set_manifest(json) &#123;</span><br><span class="line">      <span class="keyword">const</span> stringManifest = <span class="built_in">JSON</span>.stringify(json);</span><br><span class="line">      <span class="keyword">const</span> blob = <span class="keyword">new</span> Blob([stringManifest], &#123;</span><br><span class="line">        type: <span class="string">"application/json"</span></span><br><span class="line">      &#125;);</span><br><span class="line">      <span class="keyword">const</span> manifestURL = URL.createObjectURL(blob);</span><br><span class="line">      <span class="built_in">document</span>.head</span><br><span class="line">        .querySelector(<span class="string">"[rel~=manifest]"</span>)</span><br><span class="line">        .setAttribute(<span class="string">"href"</span>, manifestURL);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// for apple</span></span><br><span class="line">      <span class="built_in">document</span>.head.querySelector(</span><br><span class="line">        <span class="string">"[name~=apple-mobile-web-app-title]"</span></span><br><span class="line">      ).content = json.name;</span><br><span class="line">      <span class="built_in">document</span>.head.querySelector(</span><br><span class="line">        <span class="string">"[rel~=apple-touch-icon]"</span></span><br><span class="line">      ).href = <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.API.pano_url.getImage&#125;</span>/<span class="subst">$&#123;<span class="keyword">this</span>.project.scene.id&#125;</span>/thumb.jpg`</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// for ms</span></span><br><span class="line">      <span class="built_in">document</span>.head.querySelector(</span><br><span class="line">        <span class="string">"[name~=msapplication-TileImage]"</span></span><br><span class="line">      ).content = <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.API.pano_url.getImage&#125;</span>/<span class="subst">$&#123;<span class="keyword">this</span>.project.scene.id&#125;</span>/thumb.jpg`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然後每當資料更新的時候執行。</p>
+<p>/src/viewed/PanoViewPage.vue</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">updated() &#123;</span><br><span class="line">    <span class="keyword">this</span>.define_manifest();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Service-worker"><a href="#Service-worker" class="headerlink" title="Service worker"></a>Service worker</h1><p>Vanilla JS 的寫法請參照 <a href="/KDLrWcbESxS0OuUlMIHDcw">Service Worker 筆記</a>，先看完再往下看比較好喔。</p>
+<p>下面只有 Vue 的特殊情況才會說明。</p>
+<h1 id="Service-worker-註冊"><a href="#Service-worker-註冊" class="headerlink" title="Service worker 註冊"></a>Service worker 註冊</h1><p>如果是用 Vue 自帶的 PWA 套件的話，他都應該幫你設定好了，在網路上也可以很容易的搜尋到相關教學，這部分我就不寫了。</p>
+<p>這裡要寫的是，我不想用 Vue 的 service worker，我想要自己重頭來的話，應該要怎麼做。</p>
+<p>我們可以在 src 中新增一個 service-worker.js (位置一定要在這，不然 build 的時候 Vue 會找不到），然後在入口頁面的 created() 中新增註冊事件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="string">"serviceWorker"</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">      <span class="keyword">await</span> navigator.serviceWorker.register(</span><br><span class="line">        <span class="string">`/service-worker.js?shareCode=<span class="subst">$&#123;<span class="built_in">encodeURIComponent</span>(</span></span></span><br><span class="line"><span class="string"><span class="subst">          <span class="keyword">this</span>.$route.params.shareCode</span></span></span><br><span class="line"><span class="string"><span class="subst">        )&#125;</span>`</span></span><br><span class="line">      )</span><br><span class="line">      .then(<span class="function"><span class="params">reg</span> =&gt;</span> &#123;</span><br><span class="line">        reg.update() <span class="comment">//如果有新的 servcie worker 的話，就更新覆蓋掉舊的</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="靜態檔案快取"><a href="#靜態檔案快取" class="headerlink" title="靜態檔案快取"></a>靜態檔案快取</h1><p>Vue 產生的 service-worker.js 中，我們可以發現有一行長得像下面這樣：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.__precacheManifest = [].concat(self.__precacheManifest || []);</span><br></pre></td></tr></table></figure>
+
+<p>這是因為 Vue 有使用 Google 開發的 Workbox 套件，在 <code>npm run build</code>之後會自動把靜態檔案們的目錄編輯成一個 js 檔以進行快取。但是在這個專案中，環景資料必須要自己快取，因此我就刪掉了 workbox 的程式碼，用這個目錄自己跟 fetch 到的環景資料一起快取了。</p>
+<h1 id="一些有關於-PWA-in-iOS-的新資訊"><a href="#一些有關於-PWA-in-iOS-的新資訊" class="headerlink" title="一些有關於 PWA in iOS 的新資訊"></a>一些有關於 PWA in iOS 的新資訊</h1><ul>
+<li><a href="https://medium.com/@firt/whats-new-on-ios-12-2-for-progressive-web-apps-75c348f8e945" target="_blank" rel="noopener">What’s new on iOS 12.2 for Progressive Web Apps</a></li>
+<li><a href="https://medium.com/@firt/progressive-web-apps-in-2020-c15018c9931c" target="_blank" rel="noopener">Progressive Web Apps in 2020</a></li>
+<li><a href="https://medium.com/@firt/iphone-11-ipados-and-ios-13-for-pwas-and-web-development-5d5d9071cc49" target="_blank" rel="noopener">iPhone 11, iPadOS and iOS 13 for PWAs and web development</a></li>
+</ul>
+<blockquote>
+<p><img src="https://i.imgur.com/hv32G07.png" alt=""><br>New PWA Lifecycle on iOS 12.2 according to my testing. focus, blur and visibility events only happen when loaded over HTTPS.</p>
+</blockquote>
+<p>Reference：</p>
+<ul>
+<li><a href="https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-webpack-plugin.InjectManifest#InjectManifest" target="_blank" rel="noopener">Workbox InjectManifest API</a></li>
+<li><a href="https://krpano.com/home/" target="_blank" rel="noopener">Krpano</a></li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API" target="_blank" rel="noopener">Service Worker API</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Vue/" rel="tag"># Vue</a>
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+              <a href="/tags/PWA/" rel="tag"># PWA</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/Service-Worker/" rel="next" title="Service Worker 離線支援">
+      Service Worker 離線支援 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#目標"><span class="nav-number">1.</span> <span class="nav-text">目標</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Vue-原本的附加-pwa-機制"><span class="nav-number">2.</span> <span class="nav-text">Vue 原本的附加 pwa 機制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#manifest-的設定"><span class="nav-number">3.</span> <span class="nav-text">manifest 的設定</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#動態-manifest-json"><span class="nav-number">4.</span> <span class="nav-text">動態 manifest.json</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Service-worker"><span class="nav-number">5.</span> <span class="nav-text">Service worker</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Service-worker-註冊"><span class="nav-number">6.</span> <span class="nav-text">Service worker 註冊</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#靜態檔案快取"><span class="nav-number">7.</span> <span class="nav-text">靜態檔案快取</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#一些有關於-PWA-in-iOS-的新資訊"><span class="nav-number">8.</span> <span class="nav-text">一些有關於 PWA in iOS 的新資訊</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jacky Tseng</p>
+  <div class="site-description" itemprop="description">什麼都想嘗試看看的斜槓前端工程師隨筆</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分類</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jacky Tseng</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
